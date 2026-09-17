@@ -1,62 +1,80 @@
 # Proyecto de Refactoring - Películas y Series
 
-Proyecto educativo con malas prácticas intencionales para practicar refactoring.
+Proyecto educativo que conecta a APIs públicas de películas (OMDB y TVMaze) sin
+requerir API keys. Incluye una versión original con malas prácticas
+intencionales y su refactorización completa.
 
-## Objetivo
+## Versión refactorizada (nueva)
 
-Conectar a APIs públicas de películas (OMDB y TVMaze) sin requerir API keys. El código está intencionalmente lleno de malas prácticas para que los estudiantes practiquen refactoring.
+El paquete `src/movies_app/` implementa una arquitectura por capas, sin variables
+globales, con type hints completos, inyección de dependencias, manejo de errores
+específico y tests.
 
-## Malas Prácticas Incluidas
+Ver [`ARCHITECTURE.md`](ARCHITECTURE.md) para el diseño detallado y el mapeo
+desde los módulos originales.
 
-### Arquitectura
-- Variables globales en todas partes
-- Sin separación de responsabilidades
-- Sin principio SOLID
-- Archivos de configuración excesivos (~60+ archivos `*_config.py`)
+```
+src/movies_app/
+├── config.py            # Settings (dataclass) - reemplaza los 88 *_config.py
+├── exceptions.py        # jerarquía de errores de dominio
+├── logging_config.py    # logging centralizado (reemplaza logger/log_manager)
+├── protocols.py         # contratos: JsonClient, MovieCatalog, SeriesCatalog, Repository
+├── models/              # Movie, Series, SearchEntry (dataclasses inmutables)
+├── clients/             # HttpClient + OmdbClient + TvmazeClient
+├── repositories/        # persistencia JSON atómica (favoritos, historial)
+├── services/            # lógica de negocio (MovieService, SeriesService, ExportService)
+└── ui/                  # ConsoleRenderer + MenuApp
+```
 
-### Código
-- Sin type hints
-- Sin manejo de errores adecuado
-- `from api_movies import *` (wildcard import)
-- Strings hardcodeados
-- Duplicación de código extrema
-- Sin documentación
-- `bare except:` clauses
-- Argumentos mutables por defecto
+### Instalación
 
-### Estructura
-- ~100 archivos Python en un solo directorio
-- Múltiples implementaciones del mismo módulo (logger.py, log_manager.py)
-- Configuración de caché de API con ~50+ archivos `api_cache_*_config.py`
-- Sin tests unitarios
-- Sin requirements.txt
-- Sin virtual environment
+```bash
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -e ".[dev]"   # Windows
+# source .venv/bin/activate && pip install -e ".[dev]"  # Linux/macOS
+```
 
-### Seguridad
-- Contraseñas en texto plano
-- Sin validación de entrada
-- Sin logging con módulo `logging`
+### Ejecución
+
+```bash
+python -m movies_app
+```
+
+Variables de entorno opcionales: `OMDB_API_KEY`, `MOVIES_TIMEOUT`,
+`MOVIES_MAX_RETRIES`, `MOVIES_BACKOFF_FACTOR`, `MOVIES_DEBUG`, `MOVIES_VERBOSE`,
+`MOVIES_DATA_DIR`.
+
+### Calidad
+
+```bash
+python -m pytest          # tests + cobertura (>=90%)
+python -m ruff check src tests
+python -m black --check src tests
+python -m mypy src tests  # modo estricto
+```
 
 ## APIs Utilizadas
 
-- **OMDB API**: demo key "trilogy" (no requiere registro)
-- **TVMaze API**: pública, sin key
+- **OMDB API**: demo key `trilogy` (no requiere registro).
+- **TVMaze API**: pública, sin key.
 
-## Cómo Ejecutar
+## Versión original (legacy)
+
+Los siguientes módulos del directorio raíz se conservan como referencia de las
+malas prácticas originales: `main.py`, `api_movies.py` y los `*_manager.py`.
+
+Malas prácticas que la refactorización corrigió:
+
+- Variables globales mutables y `global` en todas partes.
+- Sin separación de responsabilidades ni principio SOLID.
+- 88 archivos `*_config.py` sin importadores (código muerto) — eliminados.
+- Módulos duplicados (`app.py`, `*_v2`, `logger.py`/`log_manager.py`) — eliminados.
+- Sin type hints, `from api_movies import *`, `bare except:` (27 casos).
+- Strings hardcodeados, concatenación en vez de f-strings, sin `logging`.
+- Sin tests, sin virtual environment.
+
+### Ejecutar la versión legacy
 
 ```bash
 python main.py
 ```
-
-## Cómo Refactorizar
-
-1. Eliminar variables globales
-2. Separar responsabilidades en módulos claros
-3. Agregar type hints
-4. Implementar manejo de errores
-5. Crear tests unitarios
-6. Eliminar código duplicado
-7. Usar f-strings en lugar de concatenación
-8. Implementar inyección de dependencias
-9. Seguir principios SOLID
-10. Reducir archivos de configuración
