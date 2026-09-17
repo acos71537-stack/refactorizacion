@@ -6,6 +6,7 @@ Reemplaza las listas hardcodeadas de ``obtener_peliculas_populares`` y
 
 from __future__ import annotations
 
+from movies_app import constants
 from movies_app.models.movie import Movie
 
 POPULAR_MOVIES: tuple[Movie, ...] = (
@@ -17,11 +18,11 @@ POPULAR_MOVIES: tuple[Movie, ...] = (
 )
 
 MOVIES_BY_GENRE: dict[str, tuple[Movie, ...]] = {
-    "accion": (
+    constants.GENRE_ACTION: (
         Movie(title="Die Hard", year=1988, imdb_rating=8.2),
         Movie(title="Mad Max Fury Road", year=2015, imdb_rating=8.1),
     ),
-    "comedia": (
+    constants.GENRE_COMEDY: (
         Movie(title="Superbad", year=2007, imdb_rating=7.6),
         Movie(title="The Hangover", year=2009, imdb_rating=7.7),
     ),

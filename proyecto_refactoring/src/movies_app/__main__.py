@@ -6,6 +6,7 @@ Ejecutar con ``python -m movies_app``.
 
 from __future__ import annotations
 
+from movies_app import constants
 from movies_app.clients.base import HttpClient
 from movies_app.clients.omdb import OmdbClient
 from movies_app.clients.tvmaze import TvmazeClient
@@ -30,8 +31,8 @@ def build_app(settings: Settings) -> MenuApp:
         La aplicacion lista para ejecutarse.
     """
     http = HttpClient(settings)
-    favorites = FavoritesRepository(settings.data_dir / "favorites.json")
-    history = HistoryRepository(settings.data_dir / "history.json")
+    favorites = FavoritesRepository(settings.data_dir / constants.FAVORITES_FILENAME)
+    history = HistoryRepository(settings.data_dir / constants.HISTORY_FILENAME)
 
     movies = MovieService(OmdbClient(http, settings), favorites, history)
     series = SeriesService(TvmazeClient(http, settings), history)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from movies_app import constants
 from movies_app.models.movie import Movie
 from movies_app.models.search import SearchEntry
 from movies_app.protocols import MovieCatalog
@@ -43,7 +44,7 @@ class MovieService:
         if key not in self._cache:
             self._cache[key] = self._catalog.search_by_title(title)
         movie = self._cache[key]
-        self._history.add(SearchEntry(title, 1 if movie else 0, "movie"))
+        self._history.add(SearchEntry(title, 1 if movie else 0, constants.SEARCH_TYPE_MOVIE))
         return movie
 
     def search_by_actor(self, actor: str) -> list[Movie]:
@@ -56,7 +57,7 @@ class MovieService:
             Lista de peliculas (puede estar vacia).
         """
         movies = self._catalog.search_by_actor(actor)
-        self._history.add(SearchEntry(actor, len(movies), "actor"))
+        self._history.add(SearchEntry(actor, len(movies), constants.SEARCH_TYPE_ACTOR))
         return movies
 
     def popular_movies(self) -> list[Movie]:

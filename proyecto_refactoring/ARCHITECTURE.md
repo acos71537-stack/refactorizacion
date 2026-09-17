@@ -25,6 +25,7 @@ proyecto_refactoring/
 │       ├── __init__.py
 │       ├── __main__.py            # entrypoint: python -m movies_app
 │       ├── config.py              # Settings (dataclass) - reemplaza global CONFIG/api_config
+│       ├── constants.py           # valores constantes y por defecto
 │       ├── exceptions.py          # jerarquía de errores de dominio
 │       ├── logging_config.py      # configuración de logging (reemplaza print/logger.py)
 │       ├── protocols.py           # Protocol: MovieCatalog, SeriesCatalog, Repository

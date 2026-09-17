@@ -10,6 +10,8 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from movies_app import constants
+
 
 def _env_bool(name: str, default: bool) -> bool:
     raw = os.getenv(name)
@@ -37,15 +39,15 @@ class Settings:
         ValueError: Si algun valor no cumple las restricciones.
     """
 
-    omdb_api_key: str = "trilogy"
-    omdb_base_url: str = "https://www.omdbapi.com/"
-    tvmaze_base_url: str = "https://api.tvmaze.com"
-    timeout: float = 30.0
-    max_retries: int = 3
-    backoff_factor: float = 0.5
+    omdb_api_key: str = constants.DEFAULT_OMDB_API_KEY
+    omdb_base_url: str = constants.OMDB_BASE_URL
+    tvmaze_base_url: str = constants.TVMAZE_BASE_URL
+    timeout: float = constants.DEFAULT_TIMEOUT_SECONDS
+    max_retries: int = constants.DEFAULT_MAX_RETRIES
+    backoff_factor: float = constants.DEFAULT_BACKOFF_FACTOR
     debug: bool = False
     verbose: bool = False
-    data_dir: Path = field(default_factory=lambda: Path("data"))
+    data_dir: Path = field(default_factory=lambda: Path(constants.DEFAULT_DATA_DIR))
 
     def __post_init__(self) -> None:
         if not self.omdb_api_key:
@@ -74,11 +76,13 @@ class Settings:
         ``MOVIES_VERBOSE`` y ``MOVIES_DATA_DIR``.
         """
         return cls(
-            omdb_api_key=os.getenv("OMDB_API_KEY", "trilogy"),
-            timeout=float(os.getenv("MOVIES_TIMEOUT", "30")),
-            max_retries=int(os.getenv("MOVIES_MAX_RETRIES", "3")),
-            backoff_factor=float(os.getenv("MOVIES_BACKOFF_FACTOR", "0.5")),
+            omdb_api_key=os.getenv("OMDB_API_KEY", constants.DEFAULT_OMDB_API_KEY),
+            timeout=float(os.getenv("MOVIES_TIMEOUT", str(constants.DEFAULT_TIMEOUT_SECONDS))),
+            max_retries=int(os.getenv("MOVIES_MAX_RETRIES", str(constants.DEFAULT_MAX_RETRIES))),
+            backoff_factor=float(
+                os.getenv("MOVIES_BACKOFF_FACTOR", str(constants.DEFAULT_BACKOFF_FACTOR))
+            ),
             debug=_env_bool("MOVIES_DEBUG", False),
             verbose=_env_bool("MOVIES_VERBOSE", False),
-            data_dir=Path(os.getenv("MOVIES_DATA_DIR", "data")),
+            data_dir=Path(os.getenv("MOVIES_DATA_DIR", constants.DEFAULT_DATA_DIR)),
         )

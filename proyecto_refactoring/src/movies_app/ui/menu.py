@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
+from movies_app import constants
 from movies_app.exceptions import MoviesAppError
 from movies_app.services.export_service import ExportService
 from movies_app.services.movie_service import MovieService
@@ -12,20 +13,6 @@ from movies_app.services.series_service import SeriesService
 from movies_app.ui.console import ConsoleRenderer
 
 InputFunc = Callable[[str], str]
-
-_MENU_LINES: tuple[str, ...] = (
-    "1. Buscar pelicula por titulo",
-    "2. Buscar por actor",
-    "3. Buscar series",
-    "4. Ver peliculas populares",
-    "5. Buscar por genero",
-    "6. Ver favoritos",
-    "7. Ver historial",
-    "8. Ver estadisticas",
-    "9. Exportar datos",
-    "10. Importar datos",
-    "11. Salir",
-)
 
 
 class MenuApp:
@@ -58,7 +45,7 @@ class MenuApp:
             except EOFError:
                 self._renderer.write("\nEntrada finalizada. Saliendo.")
                 return
-            if choice == "11":
+            if choice == constants.EXIT_OPTION:
                 self._renderer.write("Hasta luego!")
                 return
             self._dispatch(choice)
@@ -89,7 +76,7 @@ class MenuApp:
 
     def _render_menu(self) -> None:
         self._renderer.header("Sistema de peliculas y series")
-        for line in _MENU_LINES:
+        for line in constants.MENU_OPTIONS:
             self._renderer.write(line)
 
     def _search_movie(self) -> None:

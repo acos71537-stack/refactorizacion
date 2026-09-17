@@ -1,279 +1,299 @@
-import sys
 import os
+import sys
 import time
-import random
+from typing import Any
 
-# Importación masiva (mala práctica)
-from api_movies import *
+import api_movies as api
 
-def clear_screen():
+
+def clear_screen() -> None:
     """Limpia pantalla de forma no portable"""
-    os.system('cls' if os.name == 'nt' else 'clear')
+    os.system("cls" if os.name == "nt" else "clear")
 
-def print_separator():
+
+def print_separator() -> None:
     """Imprime separador"""
     print("=" * 60)
 
-def print_header(text):
+
+def print_header(text: str) -> None:
     """Imprime header"""
     print_separator()
     print(text.upper().center(60))
     print_separator()
 
-def delay(seconds):
+
+def delay(seconds: float) -> None:
     """Delay innecesario"""
     time.sleep(seconds)
 
-def mostrar_pelicula(pelicula):
+
+def mostrar_pelicula(pelicula: dict[str, Any] | None) -> None:
     """Muestra película sin validación"""
     print_separator()
     if pelicula is None:
         print("No se encontró la película")
         return
-    
+
     # Acceso directo a diccionario sin get()
     try:
-        print("Título: " + pelicula["Title"])
+        print(f"Título: {pelicula['Title']}")
     except:
         print("Título: N/A")
-    
+
     try:
-        print("Año: " + pelicula["Year"])
+        print(f"Año: {pelicula['Year']}")
     except:
         print("Año: N/A")
-    
+
     try:
-        print("Rating IMDB: " + pelicula["imdbRating"])
+        print(f"Rating IMDB: {pelicula['imdbRating']}")
     except:
         print("Rating: N/A")
-    
+
     try:
-        print("Género: " + pelicula["Genre"])
+        print(f"Género: {pelicula['Genre']}")
     except:
         print("Género: N/A")
-    
+
     try:
-        print("Director: " + pelicula["Director"])
+        print(f"Director: {pelicula['Director']}")
     except:
         print("Director: N/A")
-    
+
     try:
-        print("Actores: " + pelicula["Actors"])
+        print(f"Actores: {pelicula['Actors']}")
     except:
         print("Actores: N/A")
-    
+
     try:
-        print("Trama: " + pelicula["Plot"])
+        print(f"Trama: {pelicula['Plot']}")
     except:
         print("Trama: N/A")
-    
+
     try:
-        print("País: " + pelicula["Country"])
+        print(f"País: {pelicula['Country']}")
     except:
         print("País: N/A")
-    
+
     try:
-        print("Premios: " + pelicula["Awards"])
+        print(f"Premios: {pelicula['Awards']}")
     except:
         print("Premios: N/A")
-    
+
     print_separator()
 
-def mostrar_serie(serie):
+
+def mostrar_serie(serie: dict[str, Any]) -> None:
     """Muestra serie"""
     print_separator()
     show = serie.get("show", serie)
-    
-    print("Nombre: " + str(show.get("name", "N/A")))
-    print("Idioma: " + str(show.get("language", "N/A")))
-    print("Géneros: " + str(show.get("genres", [])))
-    print("Rating: " + str(show.get("rating", {}).get("average", "N/A")))
-    print("Estado: " + str(show.get("status", "N/A")))
-    print("Estreno: " + str(show.get("premiered", "N/A")))
-    print("Final: " + str(show.get("ended", "N/A")))
-    print("Episodios: " + str(show.get("runtime", "N/A")))
-    print("Resumen: " + str(show.get("summary", "N/A")[:200] + "..."))
+
+    print(f"Nombre: {show.get('name', 'N/A')}")
+    print(f"Idioma: {show.get('language', 'N/A')}")
+    print(f"Géneros: {show.get('genres', [])}")
+    print(f"Rating: {show.get('rating', {}).get('average', 'N/A')}")
+    print(f"Estado: {show.get('status', 'N/A')}")
+    print(f"Estreno: {show.get('premiered', 'N/A')}")
+    print(f"Final: {show.get('ended', 'N/A')}")
+    print(f"Episodios: {show.get('runtime', 'N/A')}")
+    print(f"Resumen: {str(show.get('summary', 'N/A'))[:200]}...")
     print_separator()
 
-def mostrar_lista_peliculas(peliculas):
+
+def mostrar_lista_peliculas(peliculas: list[dict[str, Any]]) -> None:
     """Muestra lista de películas"""
     i = 0
     while i < len(peliculas):
         if "titulo" in peliculas[i]:
-            print(str(i + 1) + ". " + peliculas[i]["titulo"] + " (" + str(peliculas[i]["anio"]) + ") - " + str(peliculas[i]["rating"]))
+            print(
+                f"{i + 1}. {peliculas[i]['titulo']} ({peliculas[i]['anio']}) - {peliculas[i]['rating']}"
+            )
         elif "Title" in peliculas[i]:
-            print(str(i + 1) + ". " + peliculas[i]["Title"] + " (" + peliculas[i].get("Year", "N/A") + ")")
+            print(f"{i + 1}. {peliculas[i]['Title']} ({peliculas[i].get('Year', 'N/A')})")
         else:
-            print(str(i + 1) + ". Película desconocida")
+            print(f"{i + 1}. Película desconocida")
         i += 1
 
-def funcion_buscar_pelicula():
+
+def funcion_buscar_pelicula() -> None:
     """Busca película"""
     titulo = input("Ingrese el título de la película: ")
     print("Buscando...")
     delay(1)  # Simular carga innecesaria
-    
-    pelicula = buscar_pelicula(titulo)
+
+    pelicula = api.buscar_pelicula(titulo)
     mostrar_pelicula(pelicula)
-    
+
     if pelicula is not None:
-        agregar_al_historial(pelicula)
+        api.agregar_al_historial(pelicula)
         opcion = input("\n¿Agregar a favoritos? (s/n): ")
         if opcion.lower() == "s":
-            if agregar_a_favoritas(pelicula):
+            if api.agregar_a_favoritas(pelicula):
                 print("¡Agregada a favoritos!")
             else:
                 print("Ya está en favoritos")
-    
+
     input("\nPresione Enter para continuar...")
 
-def funcion_buscar_actor():
+
+def funcion_buscar_actor() -> None:
     """Busca actor"""
     actor = input("Ingrese el nombre del actor: ")
     print("Buscando películas del actor...")
-    
-    peliculas = buscar_peliculas_por_actor(actor)
-    
+
+    peliculas = api.buscar_peliculas_por_actor(actor)
+
     if len(peliculas) > 0:
         mostrar_lista_peliculas(peliculas)
-        
+
         opcion = input("\nSeleccione una película para ver detalles (0 para volver): ")
         if opcion.isdigit():
             indice = int(opcion) - 1
             if indice >= 0 and indice < len(peliculas):
-                detalles = buscar_pelicula(peliculas[indice]["Title"])
+                detalles = api.buscar_pelicula(peliculas[indice]["Title"])
                 mostrar_pelicula(detalles)
     else:
         print("No se encontraron películas para ese actor")
-    
+
     input("\nPresione Enter para continuar...")
 
-def funcion_buscar_series():
+
+def funcion_buscar_series() -> None:
     """Busca series"""
     nombre = input("Ingrese el nombre de la serie: ")
     print("Buscando series...")
-    
-    series = buscar_series(nombre)
-    
+
+    series = api.buscar_series(nombre)
+
     if len(series) > 0:
         i = 0
         while i < len(series):
             show = series[i].get("show", {})
-            print(str(i + 1) + ". " + show.get("name", "") + " (" + show.get("status", "") + ")")
+            print(f"{i + 1}. {show.get('name', '')} ({show.get('status', '')})")
             i += 1
-        
+
         opcion = input("\nSeleccione una serie para ver detalles (0 para volver): ")
         if opcion.isdigit():
             indice = int(opcion) - 1
             if indice >= 0 and indice < len(series):
                 id_serie = series[indice].get("show", {}).get("id")
-                detalles = obtener_detalles_serie(id_serie)
+                detalles = api.obtener_detalles_serie(id_serie)
                 mostrar_serie(detalles)
     else:
         print("No se encontraron series")
-    
+
     input("\nPresione Enter para continuar...")
 
-def funcion_peliculas_populares():
+
+def funcion_peliculas_populares() -> None:
     """Muestra películas populares"""
     print_header("PELÍCULAS POPULARES")
-    peliculas = obtener_peliculas_populares()
+    peliculas = api.obtener_peliculas_populares()
     mostrar_lista_peliculas(peliculas)
     input("\nPresione Enter para continuar...")
 
-def funcion_buscar_por_genero():
+
+def funcion_buscar_por_genero() -> None:
     """Busca por género"""
     print("Géneros disponibles: acción, comedia")
     genero = input("Ingrese el género: ")
     print("Buscando...")
-    
-    peliculas = buscar_peliculas_por_genero(genero)
+
+    peliculas = api.buscar_peliculas_por_genero(genero)
     mostrar_lista_peliculas(peliculas)
-    
+
     input("\nPresione Enter para continuar...")
 
-def funcion_ver_favoritos():
+
+def funcion_ver_favoritos() -> None:
     """Muestra favoritas"""
     print_header("MIS FAVORITOS")
-    if len(PELICULAS_FAVORITAS) > 0:
+    if len(api.PELICULAS_FAVORITAS) > 0:
         i = 0
-        while i < len(PELICULAS_FAVORITAS):
-            print(str(i + 1) + ". " + PELICULAS_FAVORITAS[i].get("Title", ""))
+        while i < len(api.PELICULAS_FAVORITAS):
+            print(f"{i + 1}. {api.PELICULAS_FAVORITAS[i].get('Title', '')}")
             i += 1
-        
+
         opcion = input("\n¿Desea eliminar alguna? (número o Enter para volver): ")
         if opcion.isdigit():
             indice = int(opcion) - 1
-            if indice >= 0 and indice < len(PELICULAS_FAVORITAS):
-                titulo = PELICULAS_FAVORITAS[indice].get("Title")
-                if eliminar_de_favoritas(titulo):
+            if indice >= 0 and indice < len(api.PELICULAS_FAVORITAS):
+                titulo = api.PELICULAS_FAVORITAS[indice].get("Title")
+                if api.eliminar_de_favoritas(titulo):
                     print("Eliminada de favoritos")
     else:
         print("No tienes películas favoritas")
-    
+
     input("\nPresione Enter para continuar...")
 
-def funcion_ver_historial():
+
+def funcion_ver_historial() -> None:
     """Muestra historial"""
     print_header("HISTORIAL DE BÚSQUEDAS")
-    if len(HISTORIAL_BUSQUEDAS) > 0:
+    if len(api.HISTORIAL_BUSQUEDAS) > 0:
         i = 0
-        while i < len(HISTORIAL_BUSQUEDAS):
-            print(str(i + 1) + ". " + HISTORIAL_BUSQUEDAS[i]["titulo"])
+        while i < len(api.HISTORIAL_BUSQUEDAS):
+            print(f"{i + 1}. {api.HISTORIAL_BUSQUEDAS[i]['titulo']}")
             i += 1
-        
+
         opcion = input("\n¿Limpiar historial? (s/n): ")
         if opcion.lower() == "s":
-            limpiar_historial()
+            api.limpiar_historial()
             print("Historial limpiado")
     else:
         print("No hay historial")
-    
+
     input("\nPresione Enter para continuar...")
 
-def funcion_estadisticas():
+
+def funcion_estadisticas() -> None:
     """Muestra estadísticas"""
     print_header("ESTADÍSTICAS")
-    stats = obtener_estadisticas()
-    print("Total favoritas: " + str(stats["total_favoritas"]))
-    print("Total historial: " + str(stats["total_historial"]))
+    stats = api.obtener_estadisticas()
+    print(f"Total favoritas: {stats['total_favoritas']}")
+    print(f"Total historial: {stats['total_historial']}")
     input("\nPresione Enter para continuar...")
 
-def funcion_exportar():
+
+def funcion_exportar() -> None:
     """Exporta datos"""
     nombre = input("Nombre del archivo (sin extensión): ")
-    exportar_a_json(nombre + ".json")
+    api.exportar_a_json(f"{nombre}.json")
     input("\nPresione Enter para continuar...")
 
-def funcion_importar():
+
+def funcion_importar() -> None:
     """Importa datos"""
     nombre = input("Nombre del archivo (sin extensión): ")
     try:
-        importar_de_json(nombre + ".json")
+        api.importar_de_json(f"{nombre}.json")
     except:
         print("Error al importar archivo")
     input("\nPresione Enter para continuar...")
 
-def funcion_configuracion():
+
+def funcion_configuracion() -> None:
     """Configuración"""
     print_header("CONFIGURACIÓN")
-    print("1. Debug: " + str(CONFIG["debug"]))
-    print("2. Verbose: " + str(CONFIG["verbose"]))
-    print("3. Timeout: " + str(CONFIG["timeout"]))
-    
+    print(f"1. Debug: {api.CONFIG['debug']}")
+    print(f"2. Verbose: {api.CONFIG['verbose']}")
+    print(f"3. Timeout: {api.CONFIG['timeout']}")
+
     opcion = input("\nSeleccione opción a cambiar (0 para volver): ")
     if opcion == "1":
-        CONFIG["debug"] = not CONFIG["debug"]
-        print("Debug ahora es: " + str(CONFIG["debug"]))
+        api.CONFIG["debug"] = not api.CONFIG["debug"]
+        print(f"Debug ahora es: {api.CONFIG['debug']}")
     elif opcion == "2":
-        CONFIG["verbose"] = not CONFIG["verbose"]
-        print("Verbose ahora es: " + str(CONFIG["verbose"]))
+        api.CONFIG["verbose"] = not api.CONFIG["verbose"]
+        print(f"Verbose ahora es: {api.CONFIG['verbose']}")
     elif opcion == "3":
-        CONFIG["timeout"] = int(input("Nuevo timeout: "))
-    
+        api.CONFIG["timeout"] = int(input("Nuevo timeout: "))
+
     input("\nPresione Enter para continuar...")
 
-def menu_principal():
+
+def menu_principal() -> None:
     """Menú principal"""
     while True:
         clear_screen()
@@ -290,9 +310,9 @@ def menu_principal():
         print("10. Importar datos")
         print("11. Configuración")
         print("12. Salir")
-        
+
         opcion = input("\nSeleccione una opción: ")
-        
+
         if opcion == "1":
             funcion_buscar_pelicula()
         elif opcion == "2":
@@ -322,6 +342,7 @@ def menu_principal():
             print("Opción inválida")
             delay(1)
 
+
 # Programa principal
 if __name__ == "__main__":
     try:
@@ -330,5 +351,5 @@ if __name__ == "__main__":
         print("\n\nPrograma interrumpido")
         sys.exit(0)
     except Exception as e:
-        print("Error inesperado: " + str(e))
+        print(f"Error inesperado: {e}")
         sys.exit(1)

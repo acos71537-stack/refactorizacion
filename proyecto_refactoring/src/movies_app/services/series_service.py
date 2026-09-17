@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from movies_app import constants
 from movies_app.models.search import SearchEntry
 from movies_app.models.series import Series
 from movies_app.protocols import SeriesCatalog
@@ -29,7 +30,7 @@ class SeriesService:
             Lista de series encontradas (puede estar vacia).
         """
         series = self._catalog.search(name)
-        self._history.add(SearchEntry(name, len(series), "series"))
+        self._history.add(SearchEntry(name, len(series), constants.SEARCH_TYPE_SERIES))
         return series
 
     def get(self, series_id: int) -> Series:

@@ -8,6 +8,7 @@ from typing import Any
 
 import requests
 
+from movies_app import constants
 from movies_app.config import Settings
 from movies_app.exceptions import (
     ApiConnectionError,
@@ -19,8 +20,6 @@ from movies_app.exceptions import (
 from movies_app.logging_config import get_logger
 
 _logger = get_logger("http")
-
-_RETRYABLE_STATUS = 500
 
 
 class HttpClient:
@@ -73,7 +72,7 @@ class HttpClient:
             else:
                 if response.status_code == 404:
                     raise ResourceNotFoundError(f"Recurso no encontrado: {url}")
-                if response.status_code >= _RETRYABLE_STATUS:
+                if response.status_code >= constants.RETRYABLE_HTTP_STATUS:
                     last_error = ApiResponseError(
                         f"HTTP {response.status_code} al solicitar {url}",
                         status_code=response.status_code,

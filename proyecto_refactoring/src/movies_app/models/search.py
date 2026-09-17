@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
+from movies_app import constants
 from movies_app.models._parsing import clean_str, parse_int
 
 
@@ -27,7 +28,7 @@ class SearchEntry:
 
     query: str
     results_count: int = 0
-    search_type: str = "movie"
+    search_type: str = constants.SEARCH_TYPE_MOVIE
     timestamp: datetime = field(default_factory=_utc_now)
 
     def to_dict(self) -> dict[str, Any]:
@@ -57,6 +58,6 @@ class SearchEntry:
         return cls(
             query=clean_str(data.get("query")) or "",
             results_count=parse_int(data.get("results_count")) or 0,
-            search_type=clean_str(data.get("search_type")) or "movie",
+            search_type=clean_str(data.get("search_type")) or constants.SEARCH_TYPE_MOVIE,
             timestamp=timestamp,
         )

@@ -16,6 +16,7 @@ desde los módulos originales.
 ```
 src/movies_app/
 ├── config.py            # Settings (dataclass) - reemplaza los 88 *_config.py
+├── constants.py         # valores hardcoded (claves, URLs, tipos de busqueda)
 ├── exceptions.py        # jerarquía de errores de dominio
 ├── logging_config.py    # logging centralizado (reemplaza logger/log_manager)
 ├── protocols.py         # contratos: JsonClient, MovieCatalog, SeriesCatalog, Repository
