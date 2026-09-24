@@ -14,7 +14,7 @@ from movies_app.repositories.history import HistoryRepository
 from movies_app.services.export_service import ExportService
 from movies_app.services.movie_service import MovieService
 from movies_app.services.series_service import SeriesService
-from movies_app.ui.console import ConsoleRenderer
+from movies_app.ui.display import DisplayRenderer
 from movies_app.ui.menu import MenuApp
 from tests.fakes import StubMovieCatalog, StubSeriesCatalog
 
@@ -42,7 +42,7 @@ def _build_app(
     movies = MovieService(movie_catalog or StubMovieCatalog(), favorites, history)
     series = SeriesService(series_catalog or StubSeriesCatalog(), history)
     export = ExportService(favorites, history)
-    return MenuApp(movies, series, export, ConsoleRenderer(output), input_func=_reader(values))
+    return MenuApp(movies, series, export, DisplayRenderer(output), input_func=_reader(values))
 
 
 def test_exit_option(favorites: FavoritesRepository, history: HistoryRepository) -> None:
@@ -140,7 +140,7 @@ def test_api_error_is_handled(favorites: FavoritesRepository, history: HistoryRe
         MovieService(_FailingCatalog(), favorites, history),
         SeriesService(StubSeriesCatalog(), history),
         ExportService(favorites, history),
-        ConsoleRenderer(output),
+        DisplayRenderer(output),
         input_func=_reader(["1", "X", "", "11"]),
     )
     app.run()

@@ -7,9 +7,8 @@ Ejecutar con ``python -m movies_app``.
 from __future__ import annotations
 
 from movies_app import constants
+from movies_app.api import OmdbApi, TvmazeApi
 from movies_app.clients.base import HttpClient
-from movies_app.clients.omdb import OmdbClient
-from movies_app.clients.tvmaze import TvmazeClient
 from movies_app.config import Settings
 from movies_app.logging_config import configure_logging
 from movies_app.repositories.favorites import FavoritesRepository
@@ -17,7 +16,7 @@ from movies_app.repositories.history import HistoryRepository
 from movies_app.services.export_service import ExportService
 from movies_app.services.movie_service import MovieService
 from movies_app.services.series_service import SeriesService
-from movies_app.ui.console import ConsoleRenderer
+from movies_app.ui.display import DisplayRenderer
 from movies_app.ui.menu import MenuApp
 
 
@@ -34,10 +33,10 @@ def build_app(settings: Settings) -> MenuApp:
     favorites = FavoritesRepository(settings.data_dir / constants.FAVORITES_FILENAME)
     history = HistoryRepository(settings.data_dir / constants.HISTORY_FILENAME)
 
-    movies = MovieService(OmdbClient(http, settings), favorites, history)
-    series = SeriesService(TvmazeClient(http, settings), history)
+    movies = MovieService(OmdbApi(http, settings), favorites, history)
+    series = SeriesService(TvmazeApi(http, settings), history)
     export = ExportService(favorites, history)
-    return MenuApp(movies, series, export, ConsoleRenderer())
+    return MenuApp(movies, series, export, DisplayRenderer())
 
 
 def main() -> int:

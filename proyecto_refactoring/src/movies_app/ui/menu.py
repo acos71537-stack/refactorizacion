@@ -10,7 +10,7 @@ from movies_app.exceptions import MoviesAppError
 from movies_app.services.export_service import ExportService
 from movies_app.services.movie_service import MovieService
 from movies_app.services.series_service import SeriesService
-from movies_app.ui.console import ConsoleRenderer
+from movies_app.ui.display import DisplayRenderer
 
 InputFunc = Callable[[str], str]
 
@@ -27,7 +27,7 @@ class MenuApp:
         movies: MovieService,
         series: SeriesService,
         export: ExportService,
-        renderer: ConsoleRenderer,
+        renderer: DisplayRenderer,
         input_func: InputFunc = input,
     ) -> None:
         self._movies = movies

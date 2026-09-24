@@ -1,29 +1,35 @@
-"""Cliente de la API OMDB."""
+"""Logica de la API OMDB.
+
+Transforma las respuestas de OMDB en modelos de dominio (Movie).
+Depende de clients.base.HttpClient para el transporte y de models para el mapeo.
+"""
 
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from movies_app.clients.base import HttpClient
 from movies_app.config import Settings
 from movies_app.exceptions import ApiResponseError
 from movies_app.logging_config import get_logger
 from movies_app.models.movie import Movie
-from movies_app.protocols import JsonClient
+from movies_app.protocols import MovieCatalog
 
 _logger = get_logger("omdb")
 
 
-class OmdbClient:
+class OmdbApi(MovieCatalog):
     """Fuente de datos de peliculas respaldada por OMDB.
 
     Implementa el protocolo ``MovieCatalog``.
 
     Attributes:
+        http: Cliente HTTP para realizar peticiones.
         settings: Configuracion con la clave y URL base de OMDB.
     """
 
-    def __init__(self, http: JsonClient, settings: Settings) -> None:
+    def __init__(self, http: HttpClient, settings: Settings) -> None:
         self._http = http
         self._settings = settings
 
