@@ -7,6 +7,8 @@ Aplicación educativa de consola para consultar películas mediante OMDB y serie
 La aplicación usa una arquitectura por capas, inyección de dependencias, type hints completos, manejo de errores de dominio y logging. La configuración se carga desde variables de entorno y la API key de OMDB no está almacenada en el código.
 
 - [Guía de inicio rápido](docs/getting-started.md)
+- [Guía de pruebas](docs/testing.md)
+- [Referencia de API](docs/api-reference.md)
 - [Arquitectura](ARCHITECTURE.md)
 - [Changelog](CHANGELOG.md)
 

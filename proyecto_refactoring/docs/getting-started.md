@@ -89,7 +89,9 @@ proyecto_refactoring/
 ├── CHANGELOG.md
 ├── ARCHITECTURE.md
 ├── docs/
-│   └── getting-started.md
+│   ├── getting-started.md
+│   ├── testing.md
+│   └── api-reference.md
 ├── src/movies_app/
 │   ├── __main__.py
 │   ├── config.py

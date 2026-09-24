@@ -81,7 +81,7 @@ proyecto_refactoring/
 | `clients` | Transporte HTTP, timeout, reintentos y traducción HTTP | `config`, `exceptions` |
 | `api` | Integración específica con OMDB y TVMaze; mapeo de payloads | `clients`, `config`, `models`, `exceptions`, `protocols` |
 | `repositories` | Persistencia JSON de favoritos e historial | `models`, `exceptions` |
-| `services` | Lógica de negocio y orquestación | `api`, `repositories`, `models`, `exceptions` |
+| `services` | Lógica de negocio y orquestación | `repositories`, `models`, `protocols`, `exceptions` |
 | `ui` | Entrada y salida de consola | `services`, `models`, `exceptions` |
 | `logging_config` | Configuración de logging | `config` |
 
