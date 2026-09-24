@@ -5,6 +5,7 @@ description = "Sistema de peliculas y series (OMDB + TVMaze) refactorizado"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "python-dotenv>=1.0",
     "requests>=2.28.0",
 ]
 

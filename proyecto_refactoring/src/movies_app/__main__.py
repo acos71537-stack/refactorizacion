@@ -6,6 +6,8 @@ Ejecutar con ``python -m movies_app``.
 
 from __future__ import annotations
 
+from dotenv import load_dotenv
+
 from movies_app import constants
 from movies_app.api import OmdbApi, TvmazeApi
 from movies_app.clients.base import HttpClient
@@ -47,6 +49,7 @@ def main() -> int:
     Returns:
         Codigo de salida del proceso.
     """
+    load_dotenv()
     settings = Settings.from_env()
     configure_logging(settings)
     try:

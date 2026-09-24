@@ -43,33 +43,17 @@ OMDB_API_KEY=tu_clave_aqui
 | `MOVIES_VERBOSE` | Activa trazas detalladas | `false` |
 | `MOVIES_DATA_DIR` | Directorio de favoritos e historial | `data` |
 
-La aplicación no carga automáticamente el archivo `.env`; el archivo es local y está ignorado por Git. Puedes importarlo en la sesión actual:
+La aplicación carga `.env` automáticamente al arrancar (`python-dotenv` en `__main__.py`). Las variables ya definidas en el entorno tienen prioridad sobre el archivo. `.env` es local y está ignorado por Git; comparte únicamente `.env.example`.
+
+Si prefieres definir la variable sin usar `.env`:
 
 Windows PowerShell:
 
 ```powershell
-Get-Content .env | ForEach-Object {
-    if ($_ -match '^\s*([^#][^=]*)=(.*)$') {
-        [Environment]::SetEnvironmentVariable(
-            $matches[1].Trim(), $matches[2].Trim(), 'Process'
-        )
-    }
-}
+$env:OMDB_API_KEY = "tu_clave_aqui"
 ```
 
 Linux/macOS:
-
-```bash
-set -a
-. ./.env
-set +a
-```
-
-También puedes definir directamente la variable requerida:
-
-```powershell
-$env:OMDB_API_KEY = "tu_clave_aqui"
-```
 
 ```bash
 export OMDB_API_KEY="tu_clave_aqui"
@@ -81,6 +65,12 @@ Nunca subas `.env` al repositorio; comparte únicamente `.env.example`.
 
 ```bash
 python -m movies_app
+```
+
+Con el entorno virtual de Windows:
+
+```powershell
+.\.venv\Scripts\python.exe -m movies_app
 ```
 
 ## Pruebas

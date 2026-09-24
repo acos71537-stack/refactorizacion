@@ -130,7 +130,7 @@ MoviesAppError
 
 ## Configuración y seguridad
 
-- `OMDB_API_KEY` es obligatoria y no existe un valor por defecto en el código.
+- `OMDB_API_KEY` es obligatoria y no existe un valor por defecto en el código; se lee del entorno o de `.env`, que `__main__.py` carga con `python-dotenv` antes de construir `Settings`.
 - Las rutas de exportación rechazan traversal (`..`) y nombres de archivo no permitidos.
 - Los payloads se validan antes de convertirlos en modelos.
 - Los secretos no se escriben en logs ni se almacenan en el repositorio.

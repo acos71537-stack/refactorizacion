@@ -56,7 +56,7 @@ cp .env.example .env
 
 ### Configuración
 
-Define `OMDB_API_KEY` antes de ejecutar la aplicación. Las demás variables tienen valores por defecto:
+Define `OMDB_API_KEY` en el archivo `.env`; la aplicación lo carga automáticamente al arrancar. Las demás variables tienen valores por defecto:
 
 | Variable | Descripción | Valor por defecto |
 |---|---|---|
