@@ -43,19 +43,39 @@ OMDB_API_KEY=tu_clave_aqui
 | `MOVIES_VERBOSE` | Activa trazas detalladas | `false` |
 | `MOVIES_DATA_DIR` | Directorio de favoritos e historial | `data` |
 
-La aplicación no carga automáticamente el archivo `.env`; exporta las variables mediante el sistema operativo o carga el archivo con tu gestor de secretos preferido.
+La aplicación no carga automáticamente el archivo `.env`; el archivo es local y está ignorado por Git. Puedes importarlo en la sesión actual:
 
 Windows PowerShell:
 
 ```powershell
-$env:OMDB_API_KEY = "tu_clave_aqui"
+Get-Content .env | ForEach-Object {
+    if ($_ -match '^\s*([^#][^=]*)=(.*)$') {
+        [Environment]::SetEnvironmentVariable(
+            $matches[1].Trim(), $matches[2].Trim(), 'Process'
+        )
+    }
+}
 ```
 
 Linux/macOS:
 
 ```bash
+set -a
+. ./.env
+set +a
+```
+
+También puedes definir directamente la variable requerida:
+
+```powershell
+$env:OMDB_API_KEY = "tu_clave_aqui"
+```
+
+```bash
 export OMDB_API_KEY="tu_clave_aqui"
 ```
+
+Nunca subas `.env` al repositorio; comparte únicamente `.env.example`.
 
 ## Ejecución
 

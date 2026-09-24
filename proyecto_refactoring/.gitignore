@@ -13,6 +13,11 @@ htmlcov/
 venv/
 env/
 
+# Secretos locales
+.env
+.env.*
+!.env.example
+
 # Datos generados por la app
 data/
 exports/
