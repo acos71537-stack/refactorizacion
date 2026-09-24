@@ -7,12 +7,15 @@ from pathlib import Path
 
 from movies_app import constants
 from movies_app.exceptions import MoviesAppError
+from movies_app.logging_config import get_logger
 from movies_app.services.export_service import ExportService
 from movies_app.services.movie_service import MovieService
 from movies_app.services.series_service import SeriesService
 from movies_app.ui.display import DisplayRenderer
 
 InputFunc = Callable[[str], str]
+
+_logger = get_logger("menu")
 
 
 class MenuApp:
@@ -71,6 +74,7 @@ class MenuApp:
         try:
             handler()
         except MoviesAppError as exc:
+            _logger.error("Error de aplicacion: %s", exc)
             self._renderer.write(f"Error: {exc}")
             self._pause()
 
@@ -159,14 +163,22 @@ class MenuApp:
 
     def _export_data(self) -> None:
         name = self._input("Nombre del archivo (sin extension): ").strip()
-        self._export.export_json(Path(f"{name}.json"))
-        self._renderer.write(f"Exportado a {name}.json")
+        try:
+            self._export.export_json(Path(f"{name}.json"))
+            self._renderer.write(f"Exportado a {name}.json")
+        except Exception as exc:
+            _logger.exception("Error al exportar: %s", exc)
+            self._renderer.write(f"Error al exportar: {exc}")
         self._pause()
 
     def _import_data(self) -> None:
         name = self._input("Nombre del archivo (sin extension): ").strip()
-        self._export.import_json(Path(f"{name}.json"))
-        self._renderer.write(f"Importado desde {name}.json")
+        try:
+            self._export.import_json(Path(f"{name}.json"))
+            self._renderer.write(f"Importado desde {name}.json")
+        except Exception as exc:
+            _logger.exception("Error al importar: %s", exc)
+            self._renderer.write(f"Error al importar: {exc}")
         self._pause()
 
     def _pause(self) -> None:

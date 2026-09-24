@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from movies_app import constants
+from movies_app.logging_config import get_logger
 from movies_app.models.movie import Movie
 from movies_app.models.search import SearchEntry
 from movies_app.protocols import MovieCatalog
 from movies_app.repositories.favorites import FavoritesRepository
 from movies_app.repositories.history import HistoryRepository
 from movies_app.services.curated import ALL_CURATED_MOVIES, MOVIES_BY_GENRE, POPULAR_MOVIES
+
+_logger = get_logger("movie_service")
 
 
 class MovieService:
@@ -42,7 +45,10 @@ class MovieService:
         if not key:
             return None
         if key not in self._cache:
+            _logger.debug("Cache miss para '%s', consultando catalogo", key)
             self._cache[key] = self._catalog.search_by_title(title)
+        else:
+            _logger.debug("Cache hit para '%s'", key)
         movie = self._cache[key]
         self._history.add(SearchEntry(title, 1 if movie else 0, constants.SEARCH_TYPE_MOVIE))
         return movie
@@ -57,6 +63,7 @@ class MovieService:
             Lista de peliculas (puede estar vacia).
         """
         movies = self._catalog.search_by_actor(actor)
+        _logger.debug("Busqueda por actor '%s': %d resultados", actor, len(movies))
         self._history.add(SearchEntry(actor, len(movies), constants.SEARCH_TYPE_ACTOR))
         return movies
 

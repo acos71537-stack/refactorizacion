@@ -10,7 +10,7 @@ from movies_app import constants
 from movies_app.api import OmdbApi, TvmazeApi
 from movies_app.clients.base import HttpClient
 from movies_app.config import Settings
-from movies_app.logging_config import configure_logging
+from movies_app.logging_config import configure_logging, get_logger
 from movies_app.repositories.favorites import FavoritesRepository
 from movies_app.repositories.history import HistoryRepository
 from movies_app.services.export_service import ExportService
@@ -18,6 +18,8 @@ from movies_app.services.movie_service import MovieService
 from movies_app.services.series_service import SeriesService
 from movies_app.ui.display import DisplayRenderer
 from movies_app.ui.menu import MenuApp
+
+_logger = get_logger("main")
 
 
 def build_app(settings: Settings) -> MenuApp:
@@ -50,8 +52,11 @@ def main() -> int:
     try:
         build_app(settings).run()
     except KeyboardInterrupt:
-        print("\nPrograma interrumpido")
+        _logger.info("Programa interrumpido")
         return 130
+    except Exception as exc:
+        _logger.exception("Error inesperado: %s", exc)
+        return 1
     return 0
 
 

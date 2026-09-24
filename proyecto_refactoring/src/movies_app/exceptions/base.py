@@ -1,4 +1,7 @@
-"""Jerarquia de excepciones de dominio de la aplicacion."""
+"""Clases base de excepciones de dominio.
+
+Este modulo se puede importar sin dependencias circulares.
+"""
 
 from __future__ import annotations
 
