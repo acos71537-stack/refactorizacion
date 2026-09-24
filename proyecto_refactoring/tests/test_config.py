@@ -10,11 +10,17 @@ from movies_app.config import Settings
 
 
 def test_defaults() -> None:
-    settings = Settings()
-    assert settings.omdb_api_key == "trilogy"
+    settings = Settings(omdb_api_key="test-key")
+    assert settings.omdb_api_key == "test-key"
+    assert settings.omdb_base_url == "https://www.omdbapi.com/"
     assert settings.timeout == 30.0
     assert settings.max_retries == 3
     assert settings.data_dir == Path("data")
+
+
+def test_missing_api_key_raises() -> None:
+    with pytest.raises(ValueError, match="omdb_api_key"):
+        Settings(omdb_api_key="")
 
 
 def test_invalid_values_raise() -> None:
@@ -51,3 +57,9 @@ def test_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.max_retries == 1
     assert settings.backoff_factor == 0.1
     assert settings.data_dir == Path("custom")
+
+
+def test_from_env_missing_api_key_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("OMDB_API_KEY", raising=False)
+    with pytest.raises(ValueError, match="OMDB_API_KEY"):
+        Settings.from_env()

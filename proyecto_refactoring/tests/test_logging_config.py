@@ -9,12 +9,12 @@ from movies_app.logging_config import configure_logging, get_logger
 
 
 def test_configure_logging_sets_debug_level() -> None:
-    configure_logging(Settings(debug=True))
+    configure_logging(Settings(omdb_api_key="test-key", debug=True))
     assert logging.getLogger("movies_app").level == logging.DEBUG
 
 
 def test_configure_logging_defaults_to_info() -> None:
-    configure_logging(Settings(debug=False))
+    configure_logging(Settings(omdb_api_key="test-key", debug=False))
     assert logging.getLogger("movies_app").level == logging.INFO
 
 

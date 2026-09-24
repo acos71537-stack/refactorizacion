@@ -16,6 +16,8 @@ def test_build_app_returns_menu(settings: Settings) -> None:
 
 
 def test_main_returns_zero(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OMDB_API_KEY", "test-key")
+
     def _noop_run(_self: MenuApp) -> None:
         return None
 
@@ -24,6 +26,8 @@ def test_main_returns_zero(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_main_handles_keyboard_interrupt(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OMDB_API_KEY", "test-key")
+
     def _interrupt(_self: MenuApp) -> None:
         raise KeyboardInterrupt
 
@@ -31,7 +35,8 @@ def test_main_handles_keyboard_interrupt(monkeypatch: pytest.MonkeyPatch) -> Non
     assert entry.main() == 130
 
 
-def test_settings_use_data_dir(tmp_path: Path) -> None:
-    settings = Settings(data_dir=tmp_path)
+def test_settings_use_data_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OMDB_API_KEY", "test-key")
+    settings = Settings(omdb_api_key="test-key", data_dir=tmp_path)
     app = entry.build_app(settings)
     assert isinstance(app, MenuApp)

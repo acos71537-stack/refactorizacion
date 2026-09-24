@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Mapping
 from pathlib import Path
 
-from movies_app.exceptions import PersistenceError
+from movies_app.exceptions import InvalidInputError, PersistenceError
 from movies_app.models.movie import Movie
 from movies_app.models.search import SearchEntry
 from movies_app.repositories.favorites import FavoritesRepository
 from movies_app.repositories.history import HistoryRepository
+
+_SAFE_FILENAME_RE = re.compile(r"^[a-zA-Z0-9_.-]+$")
 
 
 class ExportService:
@@ -35,7 +38,9 @@ class ExportService:
 
         Raises:
             PersistenceError: Si falla la escritura.
+            InvalidInputError: Si la ruta contiene traversal o es invalida.
         """
+        self._validate_export_path(path)
         payload = {
             "favorites": [movie.to_dict() for movie in self._favorites.load()],
             "history": [entry.to_dict() for entry in self._history.load()],
@@ -55,7 +60,9 @@ class ExportService:
 
         Raises:
             PersistenceError: Si el archivo no existe o no es valido.
+            InvalidInputError: Si la ruta contiene traversal o es invalida.
         """
+        self._validate_export_path(path)
         try:
             with path.open(encoding="utf-8") as handle:
                 payload = json.load(handle)
@@ -75,3 +82,21 @@ class ExportService:
                 SearchEntry.from_dict(item) for item in raw_history if isinstance(item, Mapping)
             ]
             self._history.save(entries[: self._history.max_entries])
+
+    def _validate_export_path(self, path: Path) -> None:
+        """Valida que la ruta del archivo no contenga traversal ni caracteres peligrosos.
+
+        Args:
+            path: Ruta a validar.
+
+        Raises:
+            InvalidInputError: Si la ruta es invalida o contiene traversal.
+        """
+        if ".." in path.parts:
+            raise InvalidInputError("La ruta no puede contener '..'")
+        name = path.name
+        if not _SAFE_FILENAME_RE.match(name):
+            raise InvalidInputError(
+                f"Nombre de archivo invalido: {name}. "
+                "Solo se permiten letras, digitos, puntos, guiones y guiones bajos."
+            )

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from movies_app import constants
+from movies_app.exceptions import InvalidInputError
 from movies_app.logging_config import get_logger
 from movies_app.models.movie import Movie
 from movies_app.models.search import SearchEntry
@@ -40,10 +41,13 @@ class MovieService:
 
         Returns:
             La pelicula o ``None`` si no se encuentra.
+
+        Raises:
+            InvalidInputError: Si el titulo esta vacio.
         """
         key = title.strip().lower()
         if not key:
-            return None
+            raise InvalidInputError("El titulo no puede estar vacio")
         if key not in self._cache:
             _logger.debug("Cache miss para '%s', consultando catalogo", key)
             self._cache[key] = self._catalog.search_by_title(title)
@@ -61,7 +65,13 @@ class MovieService:
 
         Returns:
             Lista de peliculas (puede estar vacia).
+
+        Raises:
+            InvalidInputError: Si el nombre del actor esta vacio.
         """
+        key = actor.strip().lower()
+        if not key:
+            raise InvalidInputError("El nombre del actor no puede estar vacio")
         movies = self._catalog.search_by_actor(actor)
         _logger.debug("Busqueda por actor '%s': %d resultados", actor, len(movies))
         self._history.add(SearchEntry(actor, len(movies), constants.SEARCH_TYPE_ACTOR))
@@ -79,8 +89,13 @@ class MovieService:
 
         Returns:
             Peliculas del genero, o todas las curadas si el genero es desconocido.
+
+        Raises:
+            InvalidInputError: Si el genero esta vacio.
         """
         key = genre.strip().lower()
+        if not key:
+            raise InvalidInputError("El genero no puede estar vacio")
         movies = MOVIES_BY_GENRE.get(key)
         return list(movies) if movies is not None else list(ALL_CURATED_MOVIES)
 

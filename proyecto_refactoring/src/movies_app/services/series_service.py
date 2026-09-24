@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from movies_app import constants
+from movies_app.exceptions import InvalidInputError
 from movies_app.logging_config import get_logger
 from movies_app.models.search import SearchEntry
 from movies_app.models.series import Series
@@ -31,7 +32,13 @@ class SeriesService:
 
         Returns:
             Lista de series encontradas (puede estar vacia).
+
+        Raises:
+            InvalidInputError: Si el nombre esta vacio.
         """
+        key = name.strip().lower()
+        if not key:
+            raise InvalidInputError("El nombre de la serie no puede estar vacio")
         series = self._catalog.search(name)
         _logger.debug("Busqueda de serie '%s': %d resultados", name, len(series))
         self._history.add(SearchEntry(name, len(series), constants.SEARCH_TYPE_SERIES))

@@ -6,7 +6,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from movies_app import constants
-from movies_app.exceptions import MoviesAppError
+from movies_app.exceptions import InvalidInputError, MoviesAppError
 from movies_app.logging_config import get_logger
 from movies_app.services.export_service import ExportService
 from movies_app.services.movie_service import MovieService
@@ -53,6 +53,24 @@ class MenuApp:
                 return
             self._dispatch(choice)
 
+    def _validate_input(self, value: str, field_name: str) -> str:
+        """Valida que la entrada del usuario no este vacia ni sea solo espacios.
+
+        Args:
+            value: Valor a validar.
+            field_name: Nombre del campo para el mensaje de error.
+
+        Returns:
+            El valor limpio (strip).
+
+        Raises:
+            InvalidInputError: Si el valor esta vacio.
+        """
+        cleaned = value.strip()
+        if not cleaned:
+            raise InvalidInputError(f"{field_name} no puede estar vacio")
+        return cleaned
+
     def _dispatch(self, choice: str) -> None:
         handlers: dict[str, Callable[[], None]] = {
             "1": self._search_movie,
@@ -84,7 +102,15 @@ class MenuApp:
             self._renderer.write(line)
 
     def _search_movie(self) -> None:
-        title = self._input("Ingrese el titulo de la pelicula: ")
+        try:
+            title = self._validate_input(
+                self._input("Ingrese el titulo de la pelicula: "), "Titulo"
+            )
+        except InvalidInputError as exc:
+            _logger.warning("%s", exc)
+            self._renderer.write(str(exc))
+            self._pause()
+            return
         movie = self._movies.search_by_title(title)
         self._renderer.movie(movie)
         if movie is not None:
@@ -95,7 +121,13 @@ class MenuApp:
         self._pause()
 
     def _search_actor(self) -> None:
-        actor = self._input("Ingrese el nombre del actor: ")
+        try:
+            actor = self._validate_input(self._input("Ingrese el nombre del actor: "), "Actor")
+        except InvalidInputError as exc:
+            _logger.warning("%s", exc)
+            self._renderer.write(str(exc))
+            self._pause()
+            return
         movies = self._movies.search_by_actor(actor)
         self._renderer.movie_list(movies)
         if movies:
@@ -108,7 +140,15 @@ class MenuApp:
         self._pause()
 
     def _search_series(self) -> None:
-        name = self._input("Ingrese el nombre de la serie: ")
+        try:
+            name = self._validate_input(
+                self._input("Ingrese el nombre de la serie: "), "Nombre de serie"
+            )
+        except InvalidInputError as exc:
+            _logger.warning("%s", exc)
+            self._renderer.write(str(exc))
+            self._pause()
+            return
         series = self._series.search(name)
         self._renderer.series_list(series)
         if series:
@@ -127,7 +167,13 @@ class MenuApp:
 
     def _by_genre(self) -> None:
         self._renderer.write("Generos disponibles: accion, comedia")
-        genre = self._input("Ingrese el genero: ")
+        try:
+            genre = self._validate_input(self._input("Ingrese el genero: "), "Genero")
+        except InvalidInputError as exc:
+            _logger.warning("%s", exc)
+            self._renderer.write(str(exc))
+            self._pause()
+            return
         self._renderer.movie_list(self._movies.movies_by_genre(genre))
         self._pause()
 
@@ -162,7 +208,15 @@ class MenuApp:
         self._pause()
 
     def _export_data(self) -> None:
-        name = self._input("Nombre del archivo (sin extension): ").strip()
+        try:
+            name = self._validate_input(
+                self._input("Nombre del archivo (sin extension): "), "Nombre de archivo"
+            )
+        except InvalidInputError as exc:
+            _logger.warning("%s", exc)
+            self._renderer.write(str(exc))
+            self._pause()
+            return
         try:
             self._export.export_json(Path(f"{name}.json"))
             self._renderer.write(f"Exportado a {name}.json")
@@ -172,7 +226,15 @@ class MenuApp:
         self._pause()
 
     def _import_data(self) -> None:
-        name = self._input("Nombre del archivo (sin extension): ").strip()
+        try:
+            name = self._validate_input(
+                self._input("Nombre del archivo (sin extension): "), "Nombre de archivo"
+            )
+        except InvalidInputError as exc:
+            _logger.warning("%s", exc)
+            self._renderer.write(str(exc))
+            self._pause()
+            return
         try:
             self._export.import_json(Path(f"{name}.json"))
             self._renderer.write(f"Importado desde {name}.json")

@@ -25,7 +25,8 @@ class Settings:
     """Valores de configuracion de la aplicacion.
 
     Attributes:
-        omdb_api_key: Clave de OMDB (la demo publica es ``trilogy``).
+        omdb_api_key: Clave de OMDB (obligatoria, se lee de la variable
+            de entorno ``OMDB_API_KEY``).
         omdb_base_url: URL base de OMDB.
         tvmaze_base_url: URL base de TVMaze.
         timeout: Timeout por peticion HTTP, en segundos.
@@ -39,7 +40,7 @@ class Settings:
         ValueError: Si algun valor no cumple las restricciones.
     """
 
-    omdb_api_key: str = constants.DEFAULT_OMDB_API_KEY
+    omdb_api_key: str = ""
     omdb_base_url: str = constants.OMDB_BASE_URL
     tvmaze_base_url: str = constants.TVMAZE_BASE_URL
     timeout: float = constants.DEFAULT_TIMEOUT_SECONDS
@@ -71,12 +72,21 @@ class Settings:
     def from_env(cls) -> Settings:
         """Construye la configuracion a partir de variables de entorno.
 
-        Variables reconocidas: ``OMDB_API_KEY``, ``MOVIES_TIMEOUT``,
-        ``MOVIES_MAX_RETRIES``, ``MOVIES_BACKOFF_FACTOR``, ``MOVIES_DEBUG``,
+        Variables reconocidas: ``OMDB_API_KEY`` (obligatoria),
+        ``MOVIES_TIMEOUT``, ``MOVIES_MAX_RETRIES``,
+        ``MOVIES_BACKOFF_FACTOR``, ``MOVIES_DEBUG``,
         ``MOVIES_VERBOSE`` y ``MOVIES_DATA_DIR``.
+
+        Raises:
+            ValueError: Si ``OMDB_API_KEY`` no esta definida.
         """
+        api_key = os.getenv("OMDB_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "OMDB_API_KEY no esta definida. " "Establecela con: export OMDB_API_KEY=tu_clave"
+            )
         return cls(
-            omdb_api_key=os.getenv("OMDB_API_KEY", constants.DEFAULT_OMDB_API_KEY),
+            omdb_api_key=api_key,
             timeout=float(os.getenv("MOVIES_TIMEOUT", str(constants.DEFAULT_TIMEOUT_SECONDS))),
             max_retries=int(os.getenv("MOVIES_MAX_RETRIES", str(constants.DEFAULT_MAX_RETRIES))),
             backoff_factor=float(

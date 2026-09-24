@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import pytest
+
+from movies_app.exceptions import InvalidInputError
 from movies_app.models.movie import Movie
 from movies_app.repositories.favorites import FavoritesRepository
 from movies_app.repositories.history import HistoryRepository
@@ -36,12 +39,13 @@ def test_search_records_history(favorites: FavoritesRepository, history: History
     assert entries[1].results_count == 1
 
 
-def test_empty_title_returns_none_without_catalog_call(
+def test_empty_title_raises_invalid_input(
     favorites: FavoritesRepository, history: HistoryRepository
 ) -> None:
     catalog = StubMovieCatalog()
     service = MovieService(catalog, favorites, history)
-    assert service.search_by_title("   ") is None
+    with pytest.raises(InvalidInputError, match="titulo"):
+        service.search_by_title("   ")
     assert catalog.title_calls == 0
 
 

@@ -7,9 +7,9 @@ nombres de archivo, tipos de busqueda, generos y textos de la interfaz.
 from __future__ import annotations
 
 # --- API ---
-DEFAULT_OMDB_API_KEY = "trilogy"
 OMDB_BASE_URL = "https://www.omdbapi.com/"
 TVMAZE_BASE_URL = "https://api.tvmaze.com"
+OMDB_API_KEY_ENV_VAR = "OMDB_API_KEY"
 
 # --- HTTP ---
 DEFAULT_TIMEOUT_SECONDS = 30.0
