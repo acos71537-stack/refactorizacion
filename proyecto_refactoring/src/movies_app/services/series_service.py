@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from movies_app import constants
-from movies_app.exceptions import InvalidInputError
+from movies_app.exceptions import InvalidInputError, SeriesNotFoundError
 from movies_app.logging_config import get_logger
 from movies_app.models.search import SearchEntry
 from movies_app.models.series import Series
@@ -52,5 +52,11 @@ class SeriesService:
 
         Returns:
             La serie solicitada.
+
+        Raises:
+            SeriesNotFoundError: Si la serie no existe.
         """
-        return self._catalog.get_by_id(series_id)
+        series = self._catalog.get_by_id(series_id)
+        if series is None:
+            raise SeriesNotFoundError(series_id=series_id)
+        return series

@@ -1,7 +1,8 @@
 """Valores constantes y por defecto de la aplicacion.
 
 Centraliza los literales que antes estaban dispersos: claves de API, URLs,
-nombres de archivo, tipos de busqueda, generos y textos de la interfaz.
+nombres de archivo, tipos de busqueda y generos.
+La presentacion se define en ``ui/constants.py``.
 """
 
 from __future__ import annotations
@@ -29,21 +30,3 @@ SEARCH_TYPE_SERIES = "series"
 SEARCH_TYPE_ACTOR = "actor"
 GENRE_ACTION = "accion"
 GENRE_COMEDY = "comedia"
-
-# --- Presentacion ---
-CONSOLE_WIDTH = 60
-SUMMARY_MAX_LENGTH = 200
-EXIT_OPTION = "11"
-MENU_OPTIONS: tuple[str, ...] = (
-    "1. Buscar pelicula por titulo",
-    "2. Buscar por actor",
-    "3. Buscar series",
-    "4. Ver peliculas populares",
-    "5. Buscar por genero",
-    "6. Ver favoritos",
-    "7. Ver historial",
-    "8. Ver estadisticas",
-    "9. Exportar datos",
-    "10. Importar datos",
-    f"{EXIT_OPTION}. Salir",
-)

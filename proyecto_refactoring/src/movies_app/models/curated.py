@@ -1,8 +1,4 @@
-"""Datos curados usados como respaldo cuando no se consulta una API real.
-
-Reemplaza las listas hardcodeadas de ``obtener_peliculas_populares`` y
-``buscar_peliculas_por_genero`` de ``api_movies.py``.
-"""
+"""Datos curados de películas para consultas que no dependen de una API externa."""
 
 from __future__ import annotations
 

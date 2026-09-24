@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 from movies_app import constants
-from movies_app.exceptions import InvalidInputError
+from movies_app.exceptions import InvalidInputError, MovieNotFoundError
 from movies_app.logging_config import get_logger
+from movies_app.models.curated import ALL_CURATED_MOVIES, MOVIES_BY_GENRE, POPULAR_MOVIES
 from movies_app.models.movie import Movie
 from movies_app.models.search import SearchEntry
 from movies_app.protocols import MovieCatalog
 from movies_app.repositories.favorites import FavoritesRepository
 from movies_app.repositories.history import HistoryRepository
-from movies_app.services.curated import ALL_CURATED_MOVIES, MOVIES_BY_GENRE, POPULAR_MOVIES
 
 _logger = get_logger("movie_service")
 
@@ -33,17 +33,18 @@ class MovieService:
         self._history = history
         self._cache: dict[str, Movie | None] = {}
 
-    def search_by_title(self, title: str) -> Movie | None:
+    def search_by_title(self, title: str) -> Movie:
         """Busca una pelicula por titulo, usando cache en memoria.
 
         Args:
             title: Titulo a buscar.
 
         Returns:
-            La pelicula o ``None`` si no se encuentra.
+            La pelicula solicitada.
 
         Raises:
             InvalidInputError: Si el titulo esta vacio.
+            MovieNotFoundError: Si no se encuentra una pelicula con ese titulo.
         """
         key = title.strip().lower()
         if not key:
@@ -55,6 +56,8 @@ class MovieService:
             _logger.debug("Cache hit para '%s'", key)
         movie = self._cache[key]
         self._history.add(SearchEntry(title, 1 if movie else 0, constants.SEARCH_TYPE_MOVIE))
+        if movie is None:
+            raise MovieNotFoundError(title)
         return movie
 
     def search_by_actor(self, actor: str) -> list[Movie]:

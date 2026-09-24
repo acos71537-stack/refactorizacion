@@ -14,6 +14,7 @@ from typing import TextIO
 from movies_app.models.movie import Movie
 from movies_app.models.search import SearchEntry
 from movies_app.models.series import Series
+from movies_app.ui.constants import CONSOLE_WIDTH, SUMMARY_MAX_LENGTH
 
 
 def _display(value: object | None) -> str:
@@ -31,7 +32,7 @@ class DisplayRenderer:
         width: Ancho de los separadores.
     """
 
-    def __init__(self, output: TextIO | None = None, width: int = 60) -> None:
+    def __init__(self, output: TextIO | None = None, width: int = CONSOLE_WIDTH) -> None:
         self._output = output if output is not None else sys.stdout
         self._width = width
 
@@ -75,8 +76,8 @@ class DisplayRenderer:
         """Muestra el detalle de una serie."""
         self.separator()
         summary = series.summary or "N/A"
-        if len(summary) > 200:
-            summary = summary[:200] + "..."
+        if len(summary) > SUMMARY_MAX_LENGTH:
+            summary = summary[:SUMMARY_MAX_LENGTH] + "..."
         rows: tuple[tuple[str, object], ...] = (
             ("Nombre", series.name),
             ("Idioma", series.language),

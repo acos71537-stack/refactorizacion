@@ -102,6 +102,7 @@ def test_tvmaze_api_get_by_id_returns_series() -> None:
     http = HttpClient(settings)
     api = TvmazeApi(http, settings)
     result = api.get_by_id(1)
+    assert result is not None
     assert result.id == 1
     assert result.name == "Dark"
 

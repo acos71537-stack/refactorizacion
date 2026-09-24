@@ -1,130 +1,166 @@
-# Arquitectura objetivo
+# Arquitectura
 
-Documento de diseño para la refactorización del sistema de películas y series.
-Reemplaza el diseño actual (118 archivos planos, variables globales y sin capas)
-por un paquete Python con responsabilidades separadas y dependencias unidireccionales.
+La versión refactorizada de la aplicación está organizada como un paquete Python por capas. El objetivo es separar dominio, acceso a APIs, persistencia, lógica de negocio y presentación, con dependencias unidireccionales y contratos explícitos.
 
 ## Principios
 
-1. **Sin variables globales mutables.** Todo el estado vive en objetos inyectados.
-2. **Dependencias unidireccionales:** `ui -> services -> (clients, repositories) -> models/config`.
-3. **Contratos explícitos:** interfaces con `typing.Protocol`; implementaciones intercambiables (DI).
-4. **Type hints completos** y `mypy --strict` en verde.
-5. **Errores específicos:** excepciones de dominio, nunca `except:` desnudo.
-6. **Persistencia aislada** en repositorios JSON reutilizables.
-7. **Configuración centralizada** en un único `Settings` (dataclass), sin 88 archivos `*_config.py`.
+1. No usar variables globales mutables; el estado se inyecta en objetos.
+2. Mantener dependencias en una sola dirección: `ui -> services -> api/repositories -> clients/models/config`.
+3. Definir contratos con `typing.Protocol` para permitir fakes y sustituir implementaciones.
+4. Mantener type hints completos y `mypy --strict` en verde.
+5. Traducir errores de infraestructura a excepciones de dominio específicas.
+6. Aislar la persistencia JSON en repositorios reutilizables.
+7. Centralizar la configuración en `Settings` y obtener la clave de OMDB desde el entorno.
 
 ## Estructura de paquetes
 
-```
+```text
 proyecto_refactoring/
 ├── pyproject.toml
 ├── ARCHITECTURE.md
-├── src/
-│   └── movies_app/
+├── CHANGELOG.md
+├── .env.example
+├── src/movies_app/
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── config.py
+│   ├── constants.py
+│   ├── logging_config.py
+│   ├── protocols.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── omdb.py
+│   │   └── tvmaze.py
+│   ├── clients/
+│   │   ├── __init__.py
+│   │   └── base.py
+│   ├── exceptions/
+│   │   ├── __init__.py
+│   │   ├── base.py
+│   │   ├── export_error.py
+│   │   ├── invalid_input.py
+│   │   ├── movie_not_found.py
+│   │   └── series_not_found.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── curated.py
+│   │   ├── movie.py
+│   │   ├── search.py
+│   │   └── series.py
+│   ├── repositories/
+│   │   ├── __init__.py
+│   │   ├── base.py
+│   │   ├── favorites.py
+│   │   └── history.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── export_service.py
+│   │   ├── movie_service.py
+│   │   └── series_service.py
+│   └── ui/
 │       ├── __init__.py
-│       ├── __main__.py            # entrypoint: python -m movies_app
-│       ├── config.py              # Settings (dataclass) - reemplaza global CONFIG/api_config
-│       ├── constants.py           # valores constantes y por defecto
-│       ├── exceptions.py          # jerarquía de errores de dominio
-│       ├── logging_config.py      # configuración de logging (reemplaza print/logger.py)
-│       ├── protocols.py           # Protocol: MovieCatalog, SeriesCatalog, Repository
-│       ├── models/
-│       │   ├── __init__.py
-│       │   ├── movie.py           # Movie (dataclass) + Movie.from_omdb
-│       │   ├── series.py          # Series (dataclass) + Series.from_tvmaze
-│       │   └── search.py          # SearchEntry
-│       ├── clients/
-│       │   ├── __init__.py
-│       │   ├── base.py            # HttpClient: timeout, retries, errores HTTP
-│       │   ├── omdb.py            # OmdbClient(MovieCatalog)
-│       │   └── tvmaze.py          # TvmazeClient(SeriesCatalog)
-│       ├── repositories/
-│       │   ├── __init__.py
-│       │   ├── base.py            # JsonRepository[T] genérico (load/save atómico)
-│       │   ├── favorites.py       # FavoritesRepository
-│       │   └── history.py         # HistoryRepository
-│       ├── services/
-│       │   ├── __init__.py
-│       │   ├── movie_service.py   # MovieService: orquesta cliente + repos + cache
-│       │   └── series_service.py  # SeriesService
-│       └── ui/
-│           ├── __init__.py
-│           ├── console.py         # ConsoleRenderer (presentación pura)
-│           └── menu.py            # MenuApp (bucle de la aplicación)
+│       ├── constants.py
+│       ├── console.py
+│       ├── display.py
+│       └── menu.py
 └── tests/
-    ├── conftest.py
-    ├── test_omdb_client.py
-    ├── test_tvmaze_client.py
-    ├── test_movie_service.py
-    ├── test_repositories.py
-    └── test_models.py
+    ├── __init__.py
+    ├── fakes.py
+    ├── unit/
+    └── integration/
 ```
 
 ## Responsabilidades por capa
 
 | Capa | Responsabilidad | Puede depender de |
-|------|-----------------|-------------------|
-| `models` | Entidades inmutables y parseo de payloads de API | — (solo stdlib) |
-| `config` | Valores de configuración tipados | `models` |
-| `exceptions` | Errores de dominio | — |
-| `protocols` | Contratos (interfaces) | `models` |
-| `clients` | HTTP contra OMDB/TVMaze; traducen JSON -> modelos | `models`, `exceptions`, `config`, `protocols` |
-| `repositories` | Persistencia JSON de favoritos/historial | `models`, `exceptions`, `protocols` |
-| `services` | Lógica de negocio; orquestan clients + repos | `clients`, `repositories`, `models` |
-| `ui` | Entrada/salida de consola | `services`, `models` |
-| `logging_config` | Configuración de `logging` | `config` |
+|---|---|---|
+| `models` | Entidades y datos curados del dominio | `constants` |
+| `config` | Configuración tipada y lectura del entorno | `constants` |
+| `exceptions` | Jerarquía de errores de dominio | — |
+| `protocols` | Contratos para APIs y repositorios | `models` |
+| `clients` | Transporte HTTP, timeout, reintentos y traducción HTTP | `config`, `exceptions` |
+| `api` | Integración específica con OMDB y TVMaze; mapeo de payloads | `clients`, `config`, `models`, `exceptions`, `protocols` |
+| `repositories` | Persistencia JSON de favoritos e historial | `models`, `exceptions` |
+| `services` | Lógica de negocio y orquestación | `api`, `repositories`, `models`, `exceptions` |
+| `ui` | Entrada y salida de consola | `services`, `models`, `exceptions` |
+| `logging_config` | Configuración de logging | `config` |
 
-Regla: una capa **nunca** importa de una capa superior.
+Una capa no importa una capa superior. Las implementaciones de API dependen del transporte HTTP, mientras que los servicios dependen de contratos y no de una API concreta.
 
-## Mapeo origen -> destino
+## Composition root
 
-| Archivo actual | Destino |
-|----------------|---------|
-| `api_movies.py` (globals, requests, cache) | `clients/omdb.py`, `clients/tvmaze.py`, `services/movie_service.py`, `services/series_service.py` |
-| `main.py` (menú + print) | `ui/menu.py`, `ui/console.py`, `__main__.py` |
-| `app.py` (duplicado de main) | Eliminado (cubierto por `ui/`) |
-| `utils.py` (13 bare except) | Utilidades absorbidas por `ui/console.py` y modelos |
-| `favorites_manager.py`, `history_manager.py` | `repositories/favorites.py`, `repositories/history.py` |
-| `data_manager.py`, `export_manager.py` | `repositories/base.py` + `services` |
-| `stats_manager.py` | `services` (contadores) |
-| `logger.py`, `log_manager.py` | `logging_config.py` |
-| `cache_manager.py`, `cache_manager_v2.py` | `clients/base.py` (caché en memoria) |
-| `config_manager.py`, `config_manager_v2.py`, `api_config.py`, `api_cache_config.py` | `config.py` |
-| 88 `*_config.py` (47 `api_cache_*`) | Eliminados (sin importadores) |
-
-## Gestión de dependencias (DI)
+`__main__.py` construye las dependencias y las inyecta:
 
 ```python
-# __main__.py (composition root)
 settings = Settings.from_env()
-client = OmdbClient(HttpClient(settings), settings)
+http = HttpClient(settings)
 favorites = FavoritesRepository(settings.data_dir / "favorites.json")
 history = HistoryRepository(settings.data_dir / "history.json")
-service = MovieService(client, favorites, history)
-MenuApp(service, SeriesService(...), ConsoleRenderer()).run()
+
+movies = MovieService(OmdbApi(http, settings), favorites, history)
+series = SeriesService(TvmazeApi(http, settings), history)
+export = ExportService(favorites, history)
+MenuApp(movies, series, export, DisplayRenderer()).run()
 ```
 
-Ninguna función usa `global`. Los tests inyectan dobles (fakes/mocks) vía los `Protocol`.
+No se utiliza `global` en la aplicación refactorizada. Los tests inyectan `FakeJsonClient`, `StubMovieCatalog` y `StubSeriesCatalog` mediante los contratos.
 
 ## Manejo de errores
 
-```
+```text
 MoviesAppError
 ├── ApiError
 │   ├── ApiTimeoutError
 │   ├── ApiConnectionError
-│   └── ApiResponseError      # status HTTP != 2xx o JSON inválido
-├── ResourceNotFoundError
-└── PersistenceError          # fallo de lectura/escritura JSON
+│   ├── ApiResponseError
+│   └── ResourceNotFoundError
+├── InvalidInputError
+├── MovieNotFoundError
+├── SeriesNotFoundError
+└── PersistenceError
+    └── ExportError
 ```
 
-Los clientes traducen `requests`/`json` a estas excepciones; los servicios deciden
-si degradar (p. ej. devolver lista vacía) y la UI muestra mensajes.
+- `HttpClient` traduce timeouts, errores de conexión, códigos HTTP y JSON inválido.
+- `MovieService` registra la búsqueda y lanza `MovieNotFoundError` cuando el catálogo no devuelve una película.
+- `SeriesService` lanza `SeriesNotFoundError` cuando un identificador no existe.
+- `ExportService` lanza `ExportError` para fallos de exportación o importación y `InvalidInputError` para rutas inseguras.
+- Los repositorios usan `PersistenceError` para fallos de lectura o escritura.
+- La UI captura `MoviesAppError`, registra el detalle y muestra un mensaje al usuario.
 
-## Fases de ejecución
+## Configuración y seguridad
 
-- **Fase 2 (esta):** diseño, `pyproject.toml`, esqueleto e interfaces (modelos, errores, config, protocols).
-- **Fase 3:** implementar `clients` + `services` y cablear `__main__.py`.
-- **Fase 4:** eliminar duplicados (`app.py`, `*_v2`, `logger/log_manager`) y los 88 `*_config.py`.
-- **Fase 5:** tests con `pytest`, `mypy --strict`, `ruff`, `black`.
+- `OMDB_API_KEY` es obligatoria y no existe un valor por defecto en el código.
+- Las rutas de exportación rechazan traversal (`..`) y nombres de archivo no permitidos.
+- Los payloads se validan antes de convertirlos en modelos.
+- Los secretos no se escriben en logs ni se almacenan en el repositorio.
+
+## Estrategia de pruebas
+
+- `tests/unit/` prueba modelos, servicios, repositorios, UI y configuración sin red.
+- `tests/integration/` prueba adaptadores de API con respuestas HTTP simuladas y flujos E2E.
+- `tests/fakes.py` contiene dobles de prueba reutilizables.
+- `pytest-cov` exige una cobertura superior al 90%.
+
+Comandos de validación:
+
+```bash
+python -m pytest
+python -m ruff check src tests
+python -m black --check src tests
+python -m mypy --strict src tests
+```
+
+## Migración desde la versión legacy
+
+| Responsabilidad legacy | Ubicación actual |
+|---|---|
+| Menú y salida por consola | `ui/menu.py`, `ui/console.py`, `ui/display.py` |
+| Integraciones OMDB/TVMaze | `api/omdb.py`, `api/tvmaze.py` |
+| Transporte HTTP | `clients/base.py` |
+| Lógica de negocio | `services/` |
+| Favoritos e historial | `repositories/` |
+| Configuración distribuida | `config.py`, `constants.py` |
+| Logging | `logging_config.py` |
+| Errores de dominio | `exceptions/` |
+| Datos de películas curadas | `models/curated.py` |

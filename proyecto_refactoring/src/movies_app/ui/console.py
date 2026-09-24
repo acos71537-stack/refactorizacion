@@ -9,7 +9,7 @@ from __future__ import annotations
 import sys
 from typing import TextIO
 
-from movies_app import constants
+from movies_app.ui.constants import CONSOLE_WIDTH
 
 
 class ConsoleRenderer:
@@ -19,7 +19,7 @@ class ConsoleRenderer:
         width: Ancho de los separadores.
     """
 
-    def __init__(self, output: TextIO | None = None, width: int = constants.CONSOLE_WIDTH) -> None:
+    def __init__(self, output: TextIO | None = None, width: int = CONSOLE_WIDTH) -> None:
         self._out = output if output is not None else sys.stdout
         self._width = width
 

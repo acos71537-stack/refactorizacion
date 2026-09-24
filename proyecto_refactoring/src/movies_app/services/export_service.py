@@ -7,7 +7,7 @@ import re
 from collections.abc import Mapping
 from pathlib import Path
 
-from movies_app.exceptions import InvalidInputError, PersistenceError
+from movies_app.exceptions import ExportError, InvalidInputError
 from movies_app.models.movie import Movie
 from movies_app.models.search import SearchEntry
 from movies_app.repositories.favorites import FavoritesRepository
@@ -37,7 +37,7 @@ class ExportService:
             path: Archivo de destino.
 
         Raises:
-            PersistenceError: Si falla la escritura.
+            ExportError: Si falla la escritura.
             InvalidInputError: Si la ruta contiene traversal o es invalida.
         """
         self._validate_export_path(path)
@@ -50,7 +50,7 @@ class ExportService:
             with path.open("w", encoding="utf-8") as handle:
                 json.dump(payload, handle, indent=4, ensure_ascii=False)
         except OSError as exc:
-            raise PersistenceError(f"No se pudo exportar a {path}: {exc}") from exc
+            raise ExportError(f"No se pudo exportar a {path}: {exc}") from exc
 
     def import_json(self, path: Path) -> None:
         """Reemplaza favoritos e historial con el contenido de ``path``.
@@ -59,7 +59,7 @@ class ExportService:
             path: Archivo de origen.
 
         Raises:
-            PersistenceError: Si el archivo no existe o no es valido.
+            ExportError: Si el archivo no existe o no es valido.
             InvalidInputError: Si la ruta contiene traversal o es invalida.
         """
         self._validate_export_path(path)
@@ -67,9 +67,9 @@ class ExportService:
             with path.open(encoding="utf-8") as handle:
                 payload = json.load(handle)
         except (OSError, json.JSONDecodeError) as exc:
-            raise PersistenceError(f"No se pudo importar desde {path}: {exc}") from exc
+            raise ExportError(f"No se pudo importar desde {path}: {exc}") from exc
         if not isinstance(payload, Mapping):
-            raise PersistenceError(f"El archivo {path} no contiene un objeto JSON")
+            raise ExportError(f"El archivo {path} no contiene un objeto JSON")
 
         raw_favorites = payload.get("favorites", [])
         if isinstance(raw_favorites, list):

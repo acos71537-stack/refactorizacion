@@ -10,7 +10,7 @@ from collections.abc import Mapping, Sequence
 
 from movies_app.clients.base import HttpClient
 from movies_app.config import Settings
-from movies_app.exceptions import ApiResponseError
+from movies_app.exceptions import ApiResponseError, ResourceNotFoundError
 from movies_app.logging_config import get_logger
 from movies_app.models.series import Series
 from movies_app.protocols import SeriesCatalog
@@ -63,20 +63,23 @@ class TvmazeApi(SeriesCatalog):
                 _logger.warning("Resultado de TVMaze invalido, se omite: %s", exc)
         return series
 
-    def get_by_id(self, series_id: int) -> Series:
+    def get_by_id(self, series_id: int) -> Series | None:
         """Obtiene el detalle de una serie por su id.
 
         Args:
             series_id: Identificador de TVMaze.
 
         Returns:
-            La serie solicitada.
+            La serie solicitada o ``None`` si no existe.
 
         Raises:
             ApiResponseError: Si la respuesta no es un objeto JSON valido.
             ValueError: Si el payload no contiene un ``id`` valido.
         """
-        payload = self._http.get_json(f"{self._settings.tvmaze_base_url}/shows/{series_id}")
+        try:
+            payload = self._http.get_json(f"{self._settings.tvmaze_base_url}/shows/{series_id}")
+        except ResourceNotFoundError:
+            return None
         if not isinstance(payload, Mapping):
             raise ApiResponseError(
                 f"TVMaze devolvio un payload inesperado para el show {series_id}"

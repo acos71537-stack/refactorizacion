@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from movies_app.exceptions import InvalidInputError
+from movies_app.exceptions import InvalidInputError, MovieNotFoundError
 from movies_app.models.movie import Movie
 from movies_app.repositories.favorites import FavoritesRepository
 from movies_app.repositories.history import HistoryRepository
@@ -31,7 +31,8 @@ def test_search_records_history(favorites: FavoritesRepository, history: History
     service = MovieService(catalog, favorites, history)
 
     service.search_by_title("X")
-    service.search_by_title("missing")
+    with pytest.raises(MovieNotFoundError, match="missing"):
+        service.search_by_title("missing")
 
     entries = service.history()
     assert len(entries) == 2

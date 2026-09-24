@@ -5,12 +5,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from movies_app import constants
 from movies_app.exceptions import InvalidInputError, MoviesAppError
 from movies_app.logging_config import get_logger
 from movies_app.services.export_service import ExportService
 from movies_app.services.movie_service import MovieService
 from movies_app.services.series_service import SeriesService
+from movies_app.ui.constants import EXIT_OPTION, MENU_OPTIONS
 from movies_app.ui.display import DisplayRenderer
 
 InputFunc = Callable[[str], str]
@@ -48,7 +48,7 @@ class MenuApp:
             except EOFError:
                 self._renderer.write("\nEntrada finalizada. Saliendo.")
                 return
-            if choice == constants.EXIT_OPTION:
+            if choice == EXIT_OPTION:
                 self._renderer.write("Hasta luego!")
                 return
             self._dispatch(choice)
@@ -98,7 +98,7 @@ class MenuApp:
 
     def _render_menu(self) -> None:
         self._renderer.header("Sistema de peliculas y series")
-        for line in constants.MENU_OPTIONS:
+        for line in MENU_OPTIONS:
             self._renderer.write(line)
 
     def _search_movie(self) -> None:
@@ -220,7 +220,7 @@ class MenuApp:
         try:
             self._export.export_json(Path(f"{name}.json"))
             self._renderer.write(f"Exportado a {name}.json")
-        except Exception as exc:
+        except MoviesAppError as exc:
             _logger.exception("Error al exportar: %s", exc)
             self._renderer.write(f"Error al exportar: {exc}")
         self._pause()
@@ -238,7 +238,7 @@ class MenuApp:
         try:
             self._export.import_json(Path(f"{name}.json"))
             self._renderer.write(f"Importado desde {name}.json")
-        except Exception as exc:
+        except MoviesAppError as exc:
             _logger.exception("Error al importar: %s", exc)
             self._renderer.write(f"Error al importar: {exc}")
         self._pause()

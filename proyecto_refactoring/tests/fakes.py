@@ -62,8 +62,8 @@ class StubSeriesCatalog:
     def search(self, _name: str) -> list[Series]:
         return list(self._series)
 
-    def get_by_id(self, series_id: int) -> Series:
+    def get_by_id(self, series_id: int) -> Series | None:
         for item in self._series:
             if item.id == series_id:
                 return item
-        raise AssertionError(f"Serie {series_id} no encontrada en el stub")
+        return None

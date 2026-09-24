@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from movies_app.exceptions import InvalidInputError, PersistenceError
+from movies_app.exceptions import ExportError, InvalidInputError
 from movies_app.models.movie import Movie
 from movies_app.models.search import SearchEntry
 from movies_app.repositories.favorites import FavoritesRepository
@@ -38,7 +38,7 @@ def test_export_import_roundtrip(
 def test_import_missing_file_raises(
     favorites: FavoritesRepository, history: HistoryRepository, tmp_path: Path
 ) -> None:
-    with pytest.raises(PersistenceError):
+    with pytest.raises(ExportError):
         ExportService(favorites, history).import_json(tmp_path / "nope.json")
 
 
@@ -47,7 +47,7 @@ def test_import_invalid_json_raises(
 ) -> None:
     path = tmp_path / "bad.json"
     path.write_text("no-json", encoding="utf-8")
-    with pytest.raises(PersistenceError):
+    with pytest.raises(ExportError):
         ExportService(favorites, history).import_json(path)
 
 
@@ -56,7 +56,7 @@ def test_import_non_object_raises(
 ) -> None:
     path = tmp_path / "arr.json"
     path.write_text("[1, 2, 3]", encoding="utf-8")
-    with pytest.raises(PersistenceError):
+    with pytest.raises(ExportError):
         ExportService(favorites, history).import_json(path)
 
 

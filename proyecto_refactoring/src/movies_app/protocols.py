@@ -45,7 +45,7 @@ class SeriesCatalog(Protocol):
         """Busca series por nombre."""
         ...
 
-    def get_by_id(self, series_id: int) -> Series:
+    def get_by_id(self, series_id: int) -> Series | None:
         """Obtiene el detalle de una serie por su identificador."""
         ...
 

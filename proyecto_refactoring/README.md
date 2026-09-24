@@ -1,39 +1,70 @@
 # Proyecto de Refactoring - Películas y Series
 
-Proyecto educativo que conecta a APIs públicas de películas (OMDB y TVMaze) sin
-requerir API keys. Incluye una versión original con malas prácticas
-intencionales y su refactorización completa.
+Aplicación educativa de consola para consultar películas mediante OMDB y series mediante TVMaze. El repositorio conserva la versión legacy como referencia y mantiene una implementación refactorizada en `src/movies_app/`.
 
-## Versión refactorizada (nueva)
+## Versión refactorizada
 
-El paquete `src/movies_app/` implementa una arquitectura por capas, sin variables
-globales, con type hints completos, inyección de dependencias, manejo de errores
-específico y tests.
+La aplicación usa una arquitectura por capas, inyección de dependencias, type hints completos, manejo de errores de dominio y logging. La configuración se carga desde variables de entorno y la API key de OMDB no está almacenada en el código.
 
-Ver [`ARCHITECTURE.md`](ARCHITECTURE.md) para el diseño detallado y el mapeo
-desde los módulos originales.
+- [Guía de inicio rápido](docs/getting-started.md)
+- [Arquitectura](ARCHITECTURE.md)
+- [Changelog](CHANGELOG.md)
 
-```
+### Estructura principal
+
+```text
 src/movies_app/
-├── config.py            # Settings (dataclass) - reemplaza los 88 *_config.py
-├── constants.py         # valores hardcoded (claves, URLs, tipos de busqueda)
-├── exceptions.py        # jerarquía de errores de dominio
-├── logging_config.py    # logging centralizado (reemplaza logger/log_manager)
-├── protocols.py         # contratos: JsonClient, MovieCatalog, SeriesCatalog, Repository
-├── models/              # Movie, Series, SearchEntry (dataclasses inmutables)
-├── clients/             # HttpClient + OmdbClient + TvmazeClient
-├── repositories/        # persistencia JSON atómica (favoritos, historial)
-├── services/            # lógica de negocio (MovieService, SeriesService, ExportService)
-└── ui/                  # ConsoleRenderer + MenuApp
+├── __main__.py             # composition root y entrypoint
+├── config.py               # Settings tipado
+├── constants.py            # constantes de API, HTTP, persistencia y dominio
+├── logging_config.py       # configuración de logging
+├── protocols.py            # contratos con typing.Protocol
+├── api/                    # OmdbApi y TvmazeApi
+├── clients/                # HttpClient (transporte HTTP)
+├── exceptions/             # excepciones de dominio
+├── models/                 # Movie, Series, SearchEntry y datos curados
+├── repositories/           # persistencia JSON de favoritos e historial
+├── services/               # lógica de negocio
+└── ui/                     # consola, menú y constantes de presentación
+
+tests/
+├── unit/                   # pruebas aisladas
+├── integration/            # pruebas de integración y flujo E2E
+└── fakes.py                # dobles de prueba reutilizables
 ```
 
 ### Instalación
 
+Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+Copy-Item .env.example .env
+```
+
+Linux/macOS:
+
 ```bash
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install -e ".[dev]"   # Windows
-# source .venv/bin/activate && pip install -e ".[dev]"  # Linux/macOS
+. .venv/bin/activate
+python -m pip install -e ".[dev]"
+cp .env.example .env
 ```
+
+### Configuración
+
+Define `OMDB_API_KEY` antes de ejecutar la aplicación. Las demás variables tienen valores por defecto:
+
+| Variable | Descripción | Valor por defecto |
+|---|---|---|
+| `OMDB_API_KEY` | Clave de OMDB, obligatoria | — |
+| `MOVIES_TIMEOUT` | Timeout HTTP en segundos | `30` |
+| `MOVIES_MAX_RETRIES` | Reintentos para fallos transitorios | `3` |
+| `MOVIES_BACKOFF_FACTOR` | Factor de backoff exponencial | `0.5` |
+| `MOVIES_DEBUG` | Activa logs debug | `false` |
+| `MOVIES_VERBOSE` | Activa trazas detalladas | `false` |
+| `MOVIES_DATA_DIR` | Directorio de favoritos e historial | `data` |
 
 ### Ejecución
 
@@ -41,41 +72,35 @@ python -m venv .venv
 python -m movies_app
 ```
 
-Variables de entorno opcionales: `OMDB_API_KEY`, `MOVIES_TIMEOUT`,
-`MOVIES_MAX_RETRIES`, `MOVIES_BACKOFF_FACTOR`, `MOVIES_DEBUG`, `MOVIES_VERBOSE`,
-`MOVIES_DATA_DIR`.
+En Windows, usando el entorno virtual:
+
+```powershell
+.\.venv\Scripts\python.exe -m movies_app
+```
 
 ### Calidad
 
 ```bash
-python -m pytest          # tests + cobertura (>=90%)
+python -m pytest
 python -m ruff check src tests
 python -m black --check src tests
-python -m mypy src tests  # modo estricto
+python -m mypy --strict src tests
 ```
 
-## APIs Utilizadas
+La suite incluye pruebas unitarias, integración con respuestas HTTP simuladas y un flujo E2E. La cobertura objetivo es superior al 90%.
 
-- **OMDB API**: demo key `trilogy` (no requiere registro).
-- **TVMaze API**: pública, sin key.
+## APIs utilizadas
 
-## Versión original (legacy)
+- **OMDB API**: requiere `OMDB_API_KEY`.
+- **TVMaze API**: pública, sin clave.
 
-Los siguientes módulos del directorio raíz se conservan como referencia de las
-malas prácticas originales: `main.py`, `api_movies.py` y los `*_manager.py`.
+## Versión legacy
 
-Malas prácticas que la refactorización corrigió:
+Los módulos Python de la raíz se conservan como referencia histórica del problema. La nueva aplicación no los importa. Entre los problemas corregidos están:
 
-- Variables globales mutables y `global` en todas partes.
-- Sin separación de responsabilidades ni principio SOLID.
-- 88 archivos `*_config.py` sin importadores (código muerto) — eliminados.
-- Módulos duplicados (`app.py`, `*_v2`, `logger.py`/`log_manager.py`) — eliminados.
-- Sin type hints, `from api_movies import *`, `bare except:` (27 casos).
-- Strings hardcodeados, concatenación en vez de f-strings, sin `logging`.
-- Sin tests, sin virtual environment.
-
-### Ejecutar la versión legacy
-
-```bash
-python main.py
-```
+- Variables globales mutables y uso de `global`.
+- Ausencia de separación de responsabilidades y type hints.
+- Importaciones wildcard y bloques `except:` desnudos.
+- Código duplicado y configuración distribuida.
+- Persistencia y manejo de errores acoplados a la lógica de negocio.
+- Falta de tests automatizados y logging estructurado.

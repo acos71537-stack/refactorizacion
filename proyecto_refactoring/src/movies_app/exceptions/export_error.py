@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from movies_app.exceptions.base import MoviesAppError
+from movies_app.exceptions.base import PersistenceError
 
 
-class ExportError(MoviesAppError):
+class ExportError(PersistenceError):
     """Error durante la exportacion o importacion de datos."""
 
     def __init__(self, message: str) -> None:

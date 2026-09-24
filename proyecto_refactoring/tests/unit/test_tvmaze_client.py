@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 from movies_app.api.tvmaze import TvmazeApi
+from movies_app.clients.base import HttpClient
 from movies_app.config import Settings
-from movies_app.exceptions import ApiResponseError
+from movies_app.exceptions import ApiResponseError, ResourceNotFoundError
 from tests.fakes import FakeJsonClient
 
 
@@ -51,8 +54,15 @@ def test_search_bad_payload_raises(settings: Settings) -> None:
 
 
 def test_get_by_id_returns_series(settings: Settings) -> None:
-    client = FakeJsonClient([{"id": 7, "name": "Show"}])
-    assert TvmazeApi(client, settings).get_by_id(7).id == 7  # type: ignore[arg-type]
+    client = cast(HttpClient, FakeJsonClient([{"id": 7, "name": "Show"}]))
+    result = TvmazeApi(client, settings).get_by_id(7)
+    assert result is not None
+    assert result.id == 7
+
+
+def test_get_by_id_not_found_returns_none(settings: Settings) -> None:
+    client = cast(HttpClient, FakeJsonClient([ResourceNotFoundError("missing")]))
+    assert TvmazeApi(client, settings).get_by_id(404) is None
 
 
 def test_get_by_id_bad_payload_raises(settings: Settings) -> None:
